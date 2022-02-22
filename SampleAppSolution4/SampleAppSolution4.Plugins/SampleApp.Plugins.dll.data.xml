@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PluginAssembly FullName="SampleAppSolution4.Plugins, Version=9.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" PluginAssemblyId="84629A2F-35E9-4812-8D43-BE363D3073C9" CustomizationLevel="1">
+	<IsolationMode>2</IsolationMode>
+	<SourceType>0</SourceType>
+	<IntroducedVersion>1.0</IntroducedVersion>
+	<FileName>/PluginAssemblies/SampleAppSolution4.Plugins-84629A2F-35E9-4812-8D43-BE363D3073C9/SampleAppSolution4.Plugins.dll</FileName>
+	<PluginTypes>
+	</PluginTypes>
+</PluginAssembly>

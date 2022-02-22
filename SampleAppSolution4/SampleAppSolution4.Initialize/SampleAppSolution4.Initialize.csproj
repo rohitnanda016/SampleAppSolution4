@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <NOTARGET>true</NOTARGET>
+    <SolutionFileNamePrefix>SampleAppSolution</SolutionFileNamePrefix>
+    <ApplicationFolder>$(XrmSolutionsRoot)\solutions\SampleApp</ApplicationFolder>
+    <SolutionFolder>$(ApplicationFolder)\Solution</SolutionFolder>
+    <ProjectGuid>{D2B3E999-2848-4DC0-A9DE-5B5A78D06934}</ProjectGuid>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>SampleAppSolution4.Initialize</RootNamespace>
+  </PropertyGroup>
+  <!--<Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />-->
+  <Import Project="$(ProjectDir)build\include\NoTarget.targets" />
+  <Import Project="$(ProjectDir)build\include\SolutionPackager.targets" />
+  <ItemGroup>
+    <None Include="build\include\Environment.targets" />
+    <None Include="build\include\NoTarget.targets" />
+    <None Include="build\include\PluginAssembly.targets" />
+    <None Include="build\include\PluginResources.targets" />
+    <None Include="build\include\PVSPackage.targets" />
+    <None Include="build\include\SolutionPackager.targets" />
+    <None Include="build\include\SolutionTools.targets" />
+    <None Include="build\include\XRMSolutions.targets" />
+    <None Include="dirs.proj" />
+    <None Include="init.cmd" />
+    <None Include="init.ps1" />
+    <None Include="npm.ps1" />
+    <None Include="scripts\init\.version" />
+    <None Include="scripts\init\Initialize-DownloadLatest.ps1" />
+    <None Include="scripts\init\Initialize-Environment.ps1" />
+    <None Include="scripts\init\Initialize-InstallFromNuget.ps1" />
+    <None Include="scripts\init\Initialize-NuGet.ps1" />
+    <None Include="scripts\init\solutionpackager.ps1" />
+    <None Include="scripts\init\updateSolutionXml.ps1" />
+  </ItemGroup>
+  <PropertyGroup>
+    <PreBuildEvent>set SOLUTION_PACKAGER_ROOT =  "$(SolutionDir)$(SolutionName)\$(SolutionName).Initialize\Tools\CoreTools"
+
+$(ProjectDir)init.cmd $(SolutionDir) $(SolutionName) $(SOLUTION_PACKAGER_ROOT)
+
+if not exist $(SolutionDir)\drop\$(BuildConfiguration)\$(BuildPlatform)\Plugins mkdir $(SolutionDir)\drop\$(BuildConfiguration)\$(BuildPlatform)\Plugins
+
+if not exist $(SolutionDir)\drop\$(BuildConfiguration)\$(BuildPlatform)\Solutions mkdir $(SolutionDir)\drop\$(BuildConfiguration)\$(BuildPlatform)\Solutions
+		</PreBuildEvent>
+  </PropertyGroup>
+  <!--<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />-->
+</Project>

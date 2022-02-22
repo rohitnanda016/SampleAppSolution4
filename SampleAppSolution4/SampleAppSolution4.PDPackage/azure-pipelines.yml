@@ -1,0 +1,113 @@
+# ASP.NET Core (.NET Framework)
+# Build and test ASP.NET Core projects targeting the full .NET Framework.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- main
+
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+    pool: local
+
+    variables:
+      solution: '**/*.sln'
+      buildPlatform: 'amd64'
+      buildConfiguration: 'debug'
+      ORGURL: ''
+      pdPackageName: ' SampleAppSolution4.PDPackage'
+
+    steps:
+    - task: NuGetToolInstaller@1
+
+    - task: CmdLine@2
+      name: "Initializing_Env_And_Build_Solution"
+      displayName: Initialize And Build Solution
+      inputs:
+        script: |
+          cd $(Build.SourcesDirectory)
+          msbuild
+
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: $(Build.SourcesDirectory)/drop/
+        artifactName: SolutionArtifacts
+
+- stage: Deployment
+  jobs: 
+  - job: Deploy
+    pool: local
+    steps:
+    - checkout: none
+
+    - task: DownloadBuildArtifacts@1
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'SolutionArtifacts'
+        downloadPath: '$(System.ArtifactsDirectory)'
+      
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: |
+          cd $(System.ArtifactsDirectory)
+          [string]$onlineType = "Office365";
+          [string]$deploymentRegion ="US";
+          [string]$url = "$(ORGURL)";
+          [string]$orgName = "org503044de";
+          [string]$packageDirectory = "$(System.ArtifactsDirectory)\PDPackages\";
+          [string]$packageName = "$pdPackageName";
+          [string]$adminUser = "$(AdminUser)";
+          [string]$adminPassword = '$(AdminPassword)';
+          [int]$timeoutInMinutes = 120;
+          [string]$runtimePackageSettings = "";
+          [int]$maxCrmConnectionTimeOutMinutes = 20;
+          
+          
+          # prep script execution
+          New-PSSessionOption -CancelTimeOut 0
+          $ts = New-TimeSpan -Minutes $timeoutInMinutes;
+          $timeoutNotation = $ts.Tostring("g");
+          try
+          {	
+            #Install-Module -Name Microsoft.Xrm.Tooling.CrmConnector.PowerShell -RequiredVersion 3.3.0.834
+          
+            Write-Host("Connecting to Common data service..");
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+          
+            $CRMConn = $null;
+            # online deployment
+            Write-Host('Getting connection to online instance..');
+            $connString = "AuthType=$onlineType;Url=$url;Username=$adminUser;Password=$adminPassword";
+            $CRMConn = Get-CrmConnection -ConnectionString $connString;
+            $CRMConn
+            Get-CrmPackages -PackageDirectory $packageDirectory -PackageName $pdPackageName -LogWriteDirectory $packageDirectory;
+
+          }
+          catch
+          {
+            Write-Host $_.Exception.Message -Foreground Yellow;
+          }
+          try
+          {
+            # start package import process
+            Write-Host("Importing package..");           
+
+            Import-CrmPackage -CrmConnection $CRMConn -PackageDirectory "$packageDirectory" -PackageName "SampleAppSolution4.PDPackage" -Verbose -Timeout "1:00:00";
+
+            # terminate script execution
+            Write-Host("Completed script execution!");
+          }
+          catch
+          {
+          try{
+          Import-CrmPackage -CrmConnection $CRMConn -PackageDirectory "$packageDirectory" -PackageName "SampleAppSolution4.PDPackage" -Verbose -Timeout "1:00:00";	
+          }
+          catch{
+          Write-Host $_.Exception.Message -Foreground Yellow
+          exit 1
+          }
+          }
